@@ -11,10 +11,16 @@
       <h1 class="text-white text-2xl bg-zinc-900 font-semibold">
         Profile Page
       </h1>
-      <h1 class="text-white px-5 pt-5 text-2xl mt-10 font-semibold">
-        Hello <%= user.name %>
-      </h1>
-      <h1 class="text-white px-5">You can create a new post</h1>
+      <div class="flex  px-5 pt-5  mt-10 gap-3">
+        <div class="w-14 h-14 bg-red-500 rounded-full"></div>
+        <div>
+          <h1 class="text-white text-2xl mt-3 font-semibold">
+            Hello <%= user.name %>
+          </h1>
+          <h1 class="text-white ">You can create a new post</h1>
+
+        </div>
+      </div>
 
       <form class="px-5 pt-3" action="/post" method="post">
         <textarea
@@ -33,22 +39,21 @@
 
       <h1 class="text-white px-5 mb-5 text-2xl mt-6 font-semibold">Posts</h1>
       <div class="postcontainer flex flex-wrap px-10 bg-zinc-900">
-<% user.posts.reverse().forEach(function(post){ %>
- <div class="w-96 px-4 py-2 m-3 bg-zinc-700 rounded-md">
+        <% user.posts.reverse().forEach(function(post){ %>
+        <div class="w-96 px-4 py-2 m-3 bg-zinc-700 rounded-md">
           <h1 class="text-blue-500 font-semibold">@<%=user.username %></h1>
-          <p class="text-white overflow-hidden">
-           <%= post.content %>
-          </p>
+          <p class="text-white overflow-hidden"><%= post.content %></p>
+
           <div class="w-full justify-between flex">
-            <a class="text-blue-500" href="">Likes</a>
-            <a class="text-zinc-400" href="">edit</a>
+            <a class="text-blue-500" href="/like/<%= post._id%>"
+              ><%=post.likes.length %> <%= post.likes.indexOf(user._id)=== -1 ?
+              "Like" : "Unlike" %>
+            </a>
+            <a class="text-zinc-400" href="/edit/<%=post._id%>">edit</a>
           </div>
         </div>
 
-<% })%>
-       
-       
-        
+        <% })%>
       </div>
     </div>
   </body>

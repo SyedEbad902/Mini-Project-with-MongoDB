@@ -2,8 +2,8 @@ import bcrypt from "bcrypt";
 import cookieParser from "cookie-parser";
 import express from "express";
 import jwt from "jsonwebtoken";
-import userModel from "./models/user.js";
 import postModel from "./models/post.js";
+import userModel from "./models/user.js";
 const app = express();
 
 app.set("view engine", "ejs");
@@ -28,25 +28,53 @@ app.get("/logout", (req, res) => {
   res.redirect("/login");
 });
 
-app.get("/profile", isLoggedin,async (req, res) => { 
+app.get("/profile", isLoggedin, async (req, res) => {
   // console.log(req.user);
 
-  let user = await userModel.findOne({ email: req.user.email }).populate('posts');
+  let user = await userModel
+    .findOne({ email: req.user.email })
+    .populate("posts");
   res.render("profile", { user: user });
-  
 });
 
-app.post("/post", isLoggedin, async (req, res) => { 
+app.get("/like/:id", isLoggedin, async (req, res) => {
+  // console.log(req.user);
 
-  let user =await userModel.findOne({email : req.user.email})
-  
+  let post = await postModel.findOne({ _id: req.params.id }).populate("user");
+  if (post.likes.indexOf(req.user.userid) === -1) {
+    post.likes.push(req.user.userid);
+  } else {
+    post.likes.splice(post.likes.indexOf(req.user.userid), 1);
+  }
+  await post.save();
+  res.redirect("/profile");
+});
+
+app.get("/edit/:id", isLoggedin, async (req, res) => {
+  let post = await postModel.findOne({ _id: req.params.id }).populate("user");
+
+  res.render("edit", { post: post });
+});
+
+app.post("/update/:id", isLoggedin, async (req, res) => {
+  let post = await postModel.findOneAndUpdate(
+    { _id: req.params.id },
+    { content: req.body.content }
+  );
+
+  res.redirect("/profile");
+});
+
+app.post("/post", isLoggedin, async (req, res) => {
+  let user = await userModel.findOne({ email: req.user.email });
+
   let post = await postModel.create({
     user: user._id,
-    content : req.body.content
+    content: req.body.content,
   });
   user.posts.push(post._id);
   await user.save();
-  res.redirect('/profile');
+  res.redirect("/profile");
 });
 
 app.post("/register", async (req, res) => {
@@ -101,7 +129,6 @@ function isLoggedin(req, res, next) {
     next();
   }
 }
-
 
 app.listen(4000, () => {
   console.log("Server is running on http://localhost:4000");
