@@ -2,11 +2,20 @@ import bcrypt from "bcrypt";
 import cookieParser from "cookie-parser";
 import express from "express";
 import jwt from "jsonwebtoken";
+import path from "path";
+import { fileURLToPath } from "url";
 import postModel from "./models/post.js";
 import userModel from "./models/user.js";
+import upload from './utils/multer-config.js'
 const app = express();
 
+const __filename = fileURLToPath(import.meta.url);
+// Get the directory name of the current file
+const __dirname = path.dirname(__filename);
+
 app.set("view engine", "ejs");
+app.use(express.static(path.join(__dirname, "public")));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -15,6 +24,15 @@ app.get("/", (req, res) => {
   console.log("Request received at /");
 
   res.render("index");
+});
+app.get("/profile/upload", (req, res) => {
+  res.render("profile-upload");
+});
+app.post("/upload", isLoggedin, upload.single('profile'), async (req, res) => {
+  let user =await userModel.findOne({ email: req.user.email });
+  user.profile = req.file.filename;
+  await user.save();
+  res.redirect("profile")
 });
 
 app.get("/login", (req, res) => {
